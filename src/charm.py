@@ -32,6 +32,7 @@ from charms.grafana_k8s.v0.grafana_source import (
     GrafanaSourceEvents,
     SourceFieldsMissingError,
 )
+from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from ops.charm import (
     ActionEvent,
     CharmBase,
@@ -90,6 +91,16 @@ class GrafanaCharm(CharmBase):
         self.grafana_datasources_hash = None
         self._stored.set_default(
             database=dict(), pebble_ready=False, k8s_service_patched=False, admin_password=""
+        )
+
+        # -- Prometheus self-monitoring
+        self.metrics_endpoint = MetricsEndpointProvider(
+            self,
+            jobs=[
+                {
+                    "static_configs": [{"targets": ["*:3000"]}],
+                },
+            ],
         )
 
         # -- standard events
